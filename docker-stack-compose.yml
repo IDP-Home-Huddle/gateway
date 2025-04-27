@@ -13,7 +13,7 @@ services:
       - db
   
   task-management:
-    image: ???
+    image: vladcostin4/idp-home-huddle-task-management
     ports:
       - "8192:8192"
     networks:
@@ -27,7 +27,7 @@ services:
       - database
 
   auth:
-    image: ???
+    image: vladcostin4/idp-home-huddle-auth
     ports:
       - "8191:8191"
     networks:
