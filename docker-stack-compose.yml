@@ -1,0 +1,98 @@
+services:
+  database:
+    image: ???
+    ports:
+      - "8193:8193"
+    networks:
+      - io-network
+      - db-network
+    environment:
+      MY_HOST: database
+      DATABASE: db
+    depends_on:
+      - db
+  
+  task-management:
+    image: ???
+    ports:
+      - "8192:8192"
+    networks:
+      - io-network
+      - api-network
+      - auth-network
+    environment:
+      MY_HOST: task_management
+      DATA_ACCESS_URL: http://database:8193
+    depends_on:
+      - database
+
+  auth:
+    image: ???
+    ports:
+      - "8191:8191"
+    networks:
+      - auth-network
+      - api-network
+    environment:
+      MY_HOST: auth
+      BUSINESS_LOGIC_URL: http://task-management:8192
+    depends_on:
+      - task-management
+
+  db:
+    image: postgres:13.2-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    networks:
+      - db-network
+      - adminer-network
+  
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+    networks:
+      - adminer-network
+      - api-network
+
+  kong:
+    image: kong:latest
+    volumes:
+      - ./Kong:/usr/local/kong/declarative
+    environment:
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+    ports:
+      - 80:8000
+      - 443:8443
+      - 8001:8001
+      - 8444:8444
+    networks:
+      - api-network
+    depends_on:
+      - auth
+      - task-management
+      - adminer
+
+networks:
+  db-network:
+  adminer-network:
+  io-network:
+  api-network:
+  auth-network:
+
+volumes:
+  db-volume:

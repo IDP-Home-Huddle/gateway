@@ -1,0 +1,40 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: auth-service
+    url: http://auth:8191
+    routes:
+      - name: auth-service-route
+        paths:
+          - /auth
+        strip_path: false
+      - name: auth-swagger-route
+        paths:
+          - /auth-swagger/swagger
+        strip_path: true
+
+  - name: task-management-service
+    url: http://task-management:8192
+    routes:
+      - name: task-management-service-route
+        paths:
+          - /authproxy
+          - /user
+          - /task
+        strip_path: false
+      - name: task-management-swagger-route
+        paths:
+          - /task-management-swagger
+        strip_path: true
+
+  - name: db-adminer
+    url: http://adminer:8080
+    routes:
+      - name: adminer-route
+        paths:
+          - /adminer
+        strip_path: false
+
+consumers:
+  - username: admin
