@@ -1,6 +1,6 @@
 services:
   database:
-    image: ???
+    image: vladcostin4/idp-home-huddle-database
     ports:
       - "8193:8193"
     networks:
