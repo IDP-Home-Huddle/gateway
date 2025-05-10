@@ -1,6 +1,8 @@
+version: '3.8'
+
 services:
   database:
-    image: vladcostin4/idp-home-huddle-database
+    image: vladcostin4/idp-home-huddle-database:latest
     ports:
       - "8193:8193"
     networks:
@@ -11,9 +13,9 @@ services:
       DATABASE: db
     depends_on:
       - db
-  
+
   task-management:
-    image: vladcostin4/idp-home-huddle-task-management
+    image: vladcostin4/idp-home-huddle-task-management:latest
     ports:
       - "8192:8192"
     networks:
@@ -22,12 +24,12 @@ services:
       - auth-network
     environment:
       MY_HOST: task_management
-      DATA_ACCESS_URL: http://database:8193
+      DATABASE_SERVICE_URL: http://database:8193
     depends_on:
       - database
 
   auth:
-    image: vladcostin4/idp-home-huddle-auth
+    image: vladcostin4/idp-home-huddle-auth:latest
     ports:
       - "8191:8191"
     networks:
@@ -35,7 +37,7 @@ services:
       - api-network
     environment:
       MY_HOST: auth
-      BUSINESS_LOGIC_URL: http://task-management:8192
+      TASK_MANAGEMENT_SERVICE_URL: http://task-management:8192
     depends_on:
       - task-management
 
@@ -52,7 +54,7 @@ services:
     networks:
       - db-network
       - adminer-network
-  
+
   adminer:
     image: adminer
     ports:
@@ -76,12 +78,15 @@ services:
       KONG_ADMIN_ERROR_LOG: /dev/stderr
       KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
     ports:
-      - 80:8000
-      - 443:8443
-      - 8001:8001
-      - 8444:8444
+      - "80:8000"
+      - "443:8443"
+      - "8001:8001"
+      - "8444:8444"
     networks:
       - api-network
+      - auth-network
+      - io-network
+      - adminer-network
     depends_on:
       - auth
       - task-management
