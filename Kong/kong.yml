@@ -20,6 +20,7 @@ services:
       - name: task-management-service-route
         paths:
           - /authproxy
+          - /userproxy
           - /user
           - /task
         strip_path: false
