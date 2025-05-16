@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  database:
+    image: vladcostin4/idp-home-huddle-database:latest
+    ports:
+      - "8193:8193"
+    networks:
+      - io-network
+      - db-network
+    environment:
+      MY_HOST: database
+      DATABASE: db
+
+  task-management:
+    image: vladcostin4/idp-home-huddle-task-management:latest
+    ports:
+      - "8192:8192"
+    networks:
+      - io-network
+      - api-network
+      - auth-network
+    environment:
+      MY_HOST: task_management
+      DATABASE_SERVICE_URL: http://database:8193
+
+  auth:
+    image: vladcostin4/idp-home-huddle-auth:latest
+    ports:
+      - "8191:8191"
+    networks:
+      - auth-network
+      - api-network
+    environment:
+      MY_HOST: auth
+      TASK_MANAGEMENT_SERVICE_URL: http://task-management:8192
+
+  db:
+    image: postgres:13.2-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    networks:
+      - db-network
+      - adminer-network
+
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - adminer-network
+      - api-network
+
+  kong:
+    image: kong:latest
+    volumes:
+      - ./Kong:/usr/local/kong/declarative
+    environment:
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+    ports:
+      - "80:8000"
+      - "443:8443"
+      - "8001:8001"
+      - "8444:8444"
+    networks:
+      - api-network
+      - auth-network
+      - io-network
+      - adminer-network
+
+volumes:
+  db-volume:
+
+networks:
+  db-network:
+    driver: overlay
+  adminer-network:
+    driver: overlay
+  io-network:
+    driver: overlay
+  api-network:
+    driver: overlay
+  auth-network:
+    driver: overlay
