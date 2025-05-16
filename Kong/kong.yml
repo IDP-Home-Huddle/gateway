@@ -5,26 +5,36 @@ services:
   - name: auth-service
     url: http://auth:8191
     routes:
-      - name: auth-service-route
+      - name: auth-service-api
         paths:
           - /auth
         strip_path: false
-      - name: auth-swagger-route
+
+      - name: auth-service-swagger
         paths:
-          - /auth-swagger/swagger
+          - /auth-swagger
         strip_path: true
 
   - name: task-management-service
     url: http://task-management:8192
     routes:
-      - name: task-management-service-route
+      - name: task-management-api
         paths:
-          - /authproxy
-          - /userproxy
           - /user
           - /task
         strip_path: false
-      - name: task-management-swagger-route
+
+      - name: task-management-authproxy
+        paths:
+          - /authproxy
+        strip_path: false
+
+      - name: task-management-userproxy
+        paths:
+          - /userproxy
+        strip_path: false
+
+      - name: task-management-swagger
         paths:
           - /task-management-swagger
         strip_path: true
@@ -32,7 +42,7 @@ services:
   - name: db-adminer
     url: http://adminer:8080
     routes:
-      - name: adminer-route
+      - name: adminer-ui
         paths:
           - /adminer
         strip_path: false
